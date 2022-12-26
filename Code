@@ -214,12 +214,12 @@ predictors_test_infra <- test_infra %>% select(AdmQtr, OperYR, Age, SEX, BMI, RA
 predictors_test_noninfra <- test_noninfra %>% select(AdmQtr, OperYR, Age, SEX, BMI, RACE_NEW, ETHNICITY_HISPANIC, ORIGIN, HYPERMED, DIABETES, SMOKE_CURRENT, HXCHF, HXCOPD, DIALYSIS, FNSTATUS2, ASACLAS, PRIOR_OSR, PRIOR_EVAR, PRIOR_ABDO, PRSODM_mmolL, PRBUN_mmolL, PRCREAT_umolL, PRALBUM_gL, PRWBC_Kmm3, PRHCT_LL, PRPLATE_Kcumm, PRINR, PRPTT_s, AAA_DIAM, SURG_AP, PROX_EXT, DIST_EXT, CON_RENAL, CON_VISCERAL, CON_LER)
 
 pred_infra <- predict(XGB, as.matrix(predictors_test_infra))
-auc(test_infra$MALE, pred_infra)
-ci.auc(test_infra$MALE, pred_infra)
+auc(test_infra$MACE, pred_infra)
+ci.auc(test_infra$MACE, pred_infra)
 
 pred_noninfra <- predict(XGB, as.matrix(predictors_test_noninfra))
-auc(test_noninfra$MALE, pred_noninfra)
-ci.auc(test_noninfra$MALE, pred_noninfra)
+auc(test_noninfra$MACE, pred_noninfra)
+ci.auc(test_noninfra$MACE, pred_noninfra)
 
 perf_infra <- prediction(pred_infra, test_infra$MACE)
 perf_infra <- performance(perf_infra, "tpr", "fpr")
@@ -238,12 +238,12 @@ predictors_test_prior <- test_prior %>% select(AdmQtr, OperYR, Age, SEX, BMI, RA
 predictors_test_noprior <- test_noprior %>% select(AdmQtr, OperYR, Age, SEX, BMI, RACE_NEW, ETHNICITY_HISPANIC, ORIGIN, HYPERMED, DIABETES, SMOKE_CURRENT, HXCHF, HXCOPD, DIALYSIS, FNSTATUS2, ASACLAS, PRIOR_OSR, PRIOR_EVAR, PRIOR_ABDO, PRSODM_mmolL, PRBUN_mmolL, PRCREAT_umolL, PRALBUM_gL, PRWBC_Kmm3, PRHCT_LL, PRPLATE_Kcumm, PRINR, PRPTT_s, AAA_DIAM, SURG_AP, PROX_EXT, DIST_EXT, CON_RENAL, CON_VISCERAL, CON_LER)
 
 pred_prior <- predict(XGB, as.matrix(predictors_test_prior))
-auc(test_prior$MALE, pred_prior)
-ci.auc(test_prior$MALE, pred_prior)
+auc(test_prior$MACE, pred_prior)
+ci.auc(test_prior$MACE, pred_prior)
 
 pred_noprior <- predict(XGB, as.matrix(predictors_test_noprior))
-auc(test_noprior$MALE, pred_noprior)
-ci.auc(test_noprior$MALE, pred_noprior)
+auc(test_noprior$MACE, pred_noprior)
+ci.auc(test_noprior$MACE, pred_noprior)
 
 perf_prior <- prediction(pred_prior, test_prior$MACE)
 perf_prior <- performance(perf_prior, "tpr", "fpr")
@@ -267,7 +267,7 @@ ci.auc(test_con$MACE, pred_con)
 
 pred_nocon <- predict(XGB, as.matrix(predictors_test_nocon))
 auc(test_nocon$MACE, pred_nocon)
-ci.auc(test_nocon$MALE, pred_nocon)
+ci.auc(test_nocon$MACE, pred_nocon)
 
 perf_con <- prediction(pred_con, test_con$MACE)
 perf_con <- performance(perf_con, "tpr", "fpr")
@@ -301,6 +301,13 @@ auc(test$death, XGB_death_pred)
 ci.auc(test$death, XGB_death_pred)
 XGB_death_pred_0.5 <- ifelse(XGB_death_pred > 0.5,1,0)
 confusionMatrix(as.factor(test$death), as.factor(XGB_death_pred_0.5))
+
+XGB_reint <- xgboost(data = as.matrix(predictors_train), label = as.numeric(train$reint), nrounds = 150, verbose = TRUE, objective = 'binary:logistic', eval_metric = 'auc', max_depth = 3, eta = 0.3, gamma = 0, colsample_bytree = 0.6, min_child_weight = 1, subsample = 1)
+XGB_reint_pred <- predict(XGB_reint, as.matrix(predictors_test))
+auc(test$reint, XGB_reint_pred)
+ci.auc(test$reint, XGB_reint_pred)
+XGB_reint_pred_0.5 <- ifelse(XGB_reint_pred > 0.5,1,0)
+confusionMatrix(as.factor(test$reint), as.factor(XGB_reint_pred_0.5))
 
 XGB_other_outcomes <- xgboost(data = as.matrix(predictors_train), label = as.numeric(train$OTHER_OUTCOMES), nrounds = 150, verbose = TRUE, objective = 'binary:logistic', eval_metric = 'auc', max_depth = 3, eta = 0.3, gamma = 0, colsample_bytree = 0.6, min_child_weight = 1, subsample = 1)
 XGB_other_outcomes_pred <- predict(XGB_other_outcomes, as.matrix(predictors_test))
